@@ -1,7 +1,7 @@
 from openai import OpenAI
 from docx import Document
 import os
-from llm.prompts import MAIN_PROMPT, DOCUMENTATION_PROMPT, SYSTEM_PROMPT 
+from prompts import MAIN_PROMPT, DOCUMENTATION_PROMPT, SYSTEM_PROMPT 
 
 api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
