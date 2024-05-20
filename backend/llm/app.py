@@ -5,30 +5,38 @@ from medical_chatbot import MedicalChatbot
 app = Flask(__name__)
 CORS(app)
 
-# Initialize the chatbot
-bot = MedicalChatbot()
+chatbot = MedicalChatbot()
 
 @app.route('/start', methods=['POST'])
-def start_chat():
-    # Example response to start the chat
-    return jsonify({'response': 'Hello, I am your virtual nurse assistant. How can I help you today?'})
+def start_conversation():    
+    initial_questions_dict = request.json
+    
+    if not initial_questions_dict:
+        return jsonify({"error": "Invalid input data"}), 400
 
+    last_initial_answer = chatbot.handle_initial_questions(initial_questions_dict)
+    response = ""
+    if last_initial_answer:
+        response = chatbot.generate_response(last_initial_answer)
+    
+    return jsonify({"initial_response": response})
 
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    message = data.get('message', '')
-    response = bot.generate_response(message)
-    bot.should_stop(response)
-    return jsonify({'response': response})
+    user_message = data.get("message", "")
+    response = chatbot.generate_response(user_message)
+    chatbot.should_stop(response)
+    return jsonify({"response": response, "finished": chatbot.finished})
 
 @app.route('/report', methods=['GET'])
-def generate_report():
-    if bot.finished:
-        report_content = bot.create_report().choices[0].message.content  # Assuming create_report returns a response object
-        file_path = bot.extract_and_save_report(report_content)
-        return jsonify({'report_path': file_path})
-    return jsonify({'error': 'Conversation not finished yet'})
+def report():
+    if chatbot.finished:
+        report_content = chatbot.create_report().choices[0].message.content
+        report_data = chatbot.extract_and_save_report(report_content)
+        return jsonify(report_data)
+    else:
+        return jsonify({"error": "Chat not finished"}), 400
 
-if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
