@@ -3,12 +3,15 @@ from pymongo import MongoClient
 import os
 import re
 import logging
+import assemblyai as aai
 from prompts import MAIN_PROMPT, DOCUMENTATION_PROMPT
 from utils import parse_report_sections
 
 # Initialize OpenAI and MongoDB clients
 api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
+
+aai.settings.api_key = "f47fc69f44914e5d973f9d2f719ba271"
 
 mongoClient = MongoClient('mongodb+srv://ishansheth31:Kevi5han1234@breezytest1.saw2kxe.mongodb.net/')
 db = mongoClient["BreezyPatient"]
