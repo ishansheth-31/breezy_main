@@ -6,6 +6,10 @@ import logging
 import assemblyai as aai
 from prompts import MAIN_PROMPT, DOCUMENTATION_PROMPT
 from utils import parse_report_sections
+from bson import ObjectId
+
+facility_id = '66561810cf408ac02573b706'
+new_patient_id = '665623dd0cc7f4b6b3919022'
 
 # Initialize OpenAI and MongoDB clients
 api_key = os.getenv('OPENAI_API_KEY')
@@ -33,7 +37,7 @@ class MedicalChatbot:
             'Evaluation': ''
         }
         self.initial_questions_answers = ""
-        self.patient_id = None
+        self.patient_id = new_patient_id
         self.conversation_json = []
 
     def handle_initial_questions(self, initial_questions_dict):
@@ -42,21 +46,29 @@ class MedicalChatbot:
 
         try:
             patient_data = {
-                "name": self.initial_questions_dict["What is your name?"],
-                "height": self.initial_questions_dict["What is your approximate height?"],
-                "weight": self.initial_questions_dict["What is your approximate weight?"],
-                "medications": self.initial_questions_dict["Are you currently taking any medications?"],
-                "recent_surgeries": self.initial_questions_dict["Have you had any recent surgeries?"],
-                "drug_allergies": self.initial_questions_dict["Do you have any known drug allergies?"],
-                "visit_reason": self.initial_questions_dict["Finally, what are you in for today?"]
+                "height": self.initial_questions_dict.get("What is your approximate height?", ""),
+                "weight": self.initial_questions_dict.get("What is your approximate weight?", ""),
+                "medications": self.initial_questions_dict.get("Are you currently taking any medications?", ""),
+                "recent_surgeries": self.initial_questions_dict.get("Have you had any recent surgeries?", ""),
+                "drug_allergies": self.initial_questions_dict.get("Do you have any known drug allergies?", ""),
+                "visit_reason": self.initial_questions_dict.get("Finally, what are you in for today?", ""),
             }
-            result = patients_collection.insert_one(patient_data)
-            self.patient_id = result.inserted_id
-            logging.info(f"Patient data inserted with ID: {self.patient_id}")
+            patients_collection.update_one(
+                {"_id": ObjectId(self.patient_id)},
+                {"$set": patient_data},
+            )
+
+            patients_collection.update_one(
+                {"_id": ObjectId(self.patient_id)},
+                {"$set": {"status" : "complete"}},
+            )
+
+
         except Exception as e:
-            logging.error(f"Error inserting patient data: {e}")
+            print(f"Error updating patient data: {e}")
 
         return last_answer
+
 
     def should_stop(self, message):
         if "we'll see you in the office later today" in message.lower():
