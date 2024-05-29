@@ -29,6 +29,7 @@ def main():
 
     if bot.finished:
         report_content = bot.create_report().choices[0].message.content
+        print(report_content)
         file_path = bot.extract_and_save_report(report_content)
         print(f"Report saved to: {file_path}")
 

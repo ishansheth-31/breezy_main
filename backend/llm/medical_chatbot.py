@@ -28,14 +28,6 @@ class MedicalChatbot:
     def __init__(self):
         self.context = [{"role": "system", "content": MAIN_PROMPT}]
         self.finished = False
-        self.patient_info = {
-            'Subjective': '',
-            'Objective': '',
-            'Analysis': '',
-            'Plan': '',
-            'Implementation': '',
-            'Evaluation': ''
-        }
         self.initial_questions_answers = ""
         self.patient_id = new_patient_id
         self.conversation_json = []
@@ -60,15 +52,20 @@ class MedicalChatbot:
 
             patients_collection.update_one(
                 {"_id": ObjectId(self.patient_id)},
-                {"$set": {"status" : "complete"}},
+                {"$set": {"status": "complete"}},
             )
 
+            # Add initial questions and answers to context
+            for question, answer in self.initial_questions_dict.items():
+                self.context.append({'role': 'user', 'content': question})
+                self.context.append({'role': 'assistant', 'content': answer})
+                self.conversation_json.append({'role': 'user', 'content': question})
+                self.conversation_json.append({'role': 'assistant', 'content': answer})
 
         except Exception as e:
             print(f"Error updating patient data: {e}")
 
         return last_answer
-
 
     def should_stop(self, message):
         if "we'll see you in the office later today" in message.lower():
@@ -102,7 +99,7 @@ class MedicalChatbot:
         try:
             response = client.chat.completions.create(
                 model="gpt-4",
-                messages=[{"role": "system", "content": new_prompt}]
+                messages=[{"role": "system", "content": new_prompt}],
             )
             return response
         except Exception as e:
@@ -127,12 +124,19 @@ class MedicalChatbot:
             # Save report to MongoDB
             report_data = {
                 "patient_id": self.patient_id,
-                "subjective": report_sections.get('Subjective', ''),
-                "objective": report_sections.get('Objective', ''),
-                "analysis": report_sections.get('Analysis', ''),
-                "plan": report_sections.get('Plan', ''),
-                "implementation": report_sections.get('Implementation', ''),
-                "evaluation": report_sections.get('Evaluation', '')
+                "Chief Complaint (CC)": report_sections.get('Chief Complaint (CC)', ''),
+                "History of Present Illness (HPI)": report_sections.get('History of Present Illness (HPI)', ''),
+                "Medical history": report_sections.get('Medical history', ''),
+                "Surgical history": report_sections.get('Surgical history', ''),
+                "Family history": report_sections.get('Family history', ''),
+                "Social History": report_sections.get('Social History', ''),
+                "Review of Systems (ROS)": report_sections.get('Review of Systems (ROS)', ''),
+                "Current Medications": report_sections.get('Current Medications', ''),
+                "Objective": report_sections.get('Objective', ''),
+                "Analysis": report_sections.get('Analysis', ''),
+                "Plan": report_sections.get('Plan', ''),
+                "Implementation": report_sections.get('Implementation', ''),
+                "Evaluation": report_sections.get('Evaluation', ''),
             }
             reports_collection.insert_one(report_data)
             logging.info(f"Report data inserted for patient ID: {self.patient_id}")
