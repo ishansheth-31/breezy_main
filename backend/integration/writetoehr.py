@@ -87,16 +87,16 @@ Implementation - Procedure for clinical intervations (surgery, therapy), Medicat
 Evaluation - Observation to document follow-up findings, Condition to note changes in the patient's health status
 """
 
-- medications/dosage/how often per day/in what way
-- subjective information --> rest of soap note
-    - timeframe
-    - severity
-    - symptoms
-    - body site
-- impementation/evaluation
-- height
-- weight
-- condition summary - chief complaint
-- past surgeries
-- drug allergies
-- lifestyle - smoking
+# - medications/dosage/how often per day/in what way
+# - subjective information --> rest of soap note
+#     - timeframe
+#     - severity
+#     - symptoms
+#     - body site
+# - impementation/evaluation
+# - height
+# - weight
+# - condition summary - chief complaint
+# - past surgeries
+# - drug allergies
+# - lifestyle - smoking
