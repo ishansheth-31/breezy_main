@@ -1,23 +1,27 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function App() {
-    const [initialQuestions, setInitialQuestions] = useState([
-        "What is your first and last name?",
-        "What is your approximate height?",
-        "What is your approximate weight?",
-        "Are you currently taking any medications?",
-        "Have you had any recent surgeries?",
-        "Do you have any known drug allergies?",
-        "Finally, could you tell me what your going into the office for?",
-    ]);
+    const [initialQuestions, setInitialQuestions] = useState({
+        "What is your first and last name?": "",
+        "What is your approximate height?": "4'0\"",
+        "What is your approximate weight?": "",
+        "Are you currently taking any medications?": "",
+        "Have you had any recent surgeries?": "",
+        "Do you have any known drug allergies?": "",
+        "Finally, could you tell me what your going into the office for?": "",
+    });
     const [chatHistory, setChatHistory] = useState([]);
     const [userMessage, setUserMessage] = useState("");
     const [isConversationStarted, setIsConversationStarted] = useState(false);
     const [isConversationFinished, setIsConversationFinished] = useState(false);
     const [stageNumber, setStageNumber] = useState(0);
     const [height, setHeight] = useState("4'0\"");
+    const [loading, setLoading] = useState(false);
 
     const handleInitialQuestionsChange = (e) => {
         setInitialQuestions({
@@ -29,12 +33,13 @@ function App() {
     const handleInitialQuestionsChangeYN = (answer) => {
         setInitialQuestions({
             ...initialQuestions,
-            [initialQuestions[stageNumber - 1]]: answer,
+            [Object.keys(initialQuestions)[stageNumber - 1]]: answer,
         });
     };
 
     const startConversation = async () => {
         try {
+            setLoading(true);
             const response = await axios.post(
                 "http://127.0.0.1:5000/start",
                 initialQuestions,
@@ -46,13 +51,16 @@ function App() {
                 { role: "assistant", content: response.data.initial_response },
             ]);
             setIsConversationStarted(true);
+            setLoading(false);
         } catch (error) {
             console.error("Error starting conversation:", error);
+            setLoading(false);
         }
     };
 
     const sendMessage = async () => {
         try {
+            setLoading(true);
             const response = await axios.post(
                 "http://127.0.0.1:5000/chat",
                 { message: userMessage },
@@ -69,17 +77,22 @@ function App() {
             if (response.data.finished) {
                 setIsConversationFinished(true);
             }
+            setLoading(false);
         } catch (error) {
             console.error("Error sending message:", error);
+            setLoading(false);
         }
     };
 
     const fetchReport = async () => {
         try {
+            setLoading(true);
             const response = await axios.get("http://127.0.0.1:5000/report");
             console.log("Report:", response.data);
+            setLoading(false);
         } catch (error) {
             console.error("Error fetching report:", error);
+            setLoading(false);
         }
     };
 
@@ -90,10 +103,9 @@ function App() {
                 width: "100vw",
                 height: "100vh",
                 textAlign: "center",
-                fontFamily: "Tahoma",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 justifyContent: "center",
-                background:
-                    "linear-gradient(165deg, hsl(202deg 100% 50%) 0%, hsl(203deg 100% 58%) 7%,hsl(203deg 100% 62%) 14%,hsl(203deg 100% 65%) 19%,hsl(203deg 100% 69%) 24%,hsl(202deg 100% 72%) 29%,hsl(202deg 100% 75%) 32%,hsl(203deg 100% 80%) 36%,hsl(203deg 100% 85%) 40%,hsl(204deg 100% 89%) 44%,hsl(205deg 100% 93%) 52%,hsl(205deg 100% 96%) 66%,hsl(0deg 0% 100%) 100%)",
+                background: "white",
                 color: "black",
             }}
         >
@@ -116,11 +128,7 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <img
-                                src="\Time-Machine.svg"
-                                alt="time"
-                                style={{ width: "50px" }}
-                            ></img>
+                            <p>BREEZY MEDICAL SURVEY</p>
                         </div>
                         <div
                             style={{
@@ -154,21 +162,14 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <button
-                                style={{
-                                    backgroundColor: "#00A3FF",
-                                    border: "none",
-                                    color: "white",
-                                    padding: "10px",
-                                    borderRadius: "20px",
-                                    cursor: "pointer",
-                                }}
+                            <Button
+                                variant="contained"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}
                             >
                                 Begin your assessment
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )) ||
@@ -192,14 +193,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -220,7 +221,7 @@ function App() {
                             </p>
                             <p>
                                 Let's get started.{" "}
-                                {initialQuestions[stageNumber - 1]}
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
                             </p>
                         </div>
                         <div
@@ -233,33 +234,26 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <input
-                                style={{
-                                    borderColor: "#00A3FF",
-                                    borderRadius: "30px",
-                                    textAlign: "center",
-                                    color: "#00A3FF",
-                                    marginBottom: "10px",
-                                    width: "12em",
-                                    height: "1.5em",
-                                }}
-                                type="text"
-                                placeholder="e.g. John Smith"
-                                name={initialQuestions[stageNumber - 1]}
+                            <TextField
+                                style={{ marginBottom: "10px" }}
+                                id="outlined-basic"
+                                label="Name"
+                                variant="outlined"
+                                name={
+                                    Object.keys(initialQuestions)[
+                                        stageNumber - 1
+                                    ]
+                                }
                                 onChange={handleInitialQuestionsChange}
                             />
-                            <button
-                                style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}
                             >
                                 Continue &gt;
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )) ||
@@ -283,14 +277,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -306,7 +300,9 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
                         </div>
                         <div
                             style={{
@@ -341,24 +337,20 @@ function App() {
                                     setHeight(newHeight);
                                     handleInitialQuestionsChange({
                                         target: {
-                                            name: "height",
+                                            name: "What is your approximate height?",
                                             value: newHeight,
                                         },
                                     });
                                 }}
                             />
-                            <button
-                                style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}
                             >
                                 Continue &gt;
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )) ||
@@ -382,14 +374,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -405,7 +397,9 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
                         </div>
                         <div
                             style={{
@@ -417,33 +411,26 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <input
-                                style={{
-                                    borderColor: "#00A3FF",
-                                    borderRadius: "30px",
-                                    textAlign: "center",
-                                    color: "#00A3FF",
-                                    marginBottom: "10px",
-                                    width: "12em",
-                                    height: "1.5em",
-                                }}
-                                type="text"
-                                placeholder="e.g. 50 lb or 23 kg"
-                                name={initialQuestions[stageNumber - 1]}
+                            <TextField
+                                style={{ marginBottom: "10px" }}
+                                id="outlined-basic"
+                                label="Weight (in lbs.)"
+                                variant="outlined"
+                                name={
+                                    Object.keys(initialQuestions)[
+                                        stageNumber - 1
+                                    ]
+                                }
                                 onChange={handleInitialQuestionsChange}
                             />
-                            <button
-                                style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}
                             >
                                 Continue &gt;
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )) ||
@@ -467,14 +454,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -490,7 +477,9 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
                         </div>
                         <div
                             style={{
@@ -502,61 +491,50 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <div>
-                                <button
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginBottom: "10px",
+                                }}
+                            >
+                                <TextField
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        color: "#00A3FF",
-                                        backgroundColor: "white",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
                                         marginRight: "10px",
                                     }}
-                                    name={initialQuestions[stageNumber - 1]}
+                                    id="outlined-basic"
+                                    label="List Medications"
+                                    variant="outlined"
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
+                                    onChange={handleInitialQuestionsChange}
+                                />
+                                <Button
+                                    variant="contained"
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
                                     onClick={() => {
-                                        handleInitialQuestionsChangeYN("Yes");
+                                        handleInitialQuestionsChangeYN("None");
                                         setStageNumber(stageNumber + 1);
                                     }}
                                 >
-                                    Yes
-                                </button>
-                                <button
-                                    style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        backgroundColor: "white",
-                                        color: "#00A3FF",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
-                                    }}
-                                    name={initialQuestions[stageNumber - 1]}
-                                    onClick={() => {
-                                        handleInitialQuestionsChangeYN("No");
-                                        setStageNumber(stageNumber + 1);
-                                    }}
-                                >
-                                    No
-                                </button>
+                                    None
+                                </Button>
                             </div>
-                            <button
-                                style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}
                             >
                                 Continue &gt;
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )) ||
@@ -580,14 +558,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -603,7 +581,9 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
                         </div>
                         <div
                             style={{
@@ -616,47 +596,40 @@ function App() {
                             }}
                         >
                             <div>
-                                <button
+                                <Button
+                                    variant="contained"
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        color: "#00A3FF",
-                                        backgroundColor: "white",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
                                         marginRight: "10px",
                                     }}
-                                    name={initialQuestions[stageNumber - 1]}
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
                                     onClick={() => {
                                         handleInitialQuestionsChangeYN("Yes");
                                         setStageNumber(stageNumber + 1);
                                     }}
                                 >
                                     Yes
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="contained"
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        backgroundColor: "white",
-                                        color: "#00A3FF",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
+                                        marginRight: "10px",
                                     }}
-                                    name={initialQuestions[stageNumber - 1]}
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
                                     onClick={() => {
                                         handleInitialQuestionsChangeYN("No");
                                         setStageNumber(stageNumber + 1);
                                     }}
                                 >
                                     No
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -681,14 +654,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -704,7 +677,9 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
                         </div>
                         <div
                             style={{
@@ -717,47 +692,40 @@ function App() {
                             }}
                         >
                             <div>
-                                <button
+                                <Button
+                                    variant="contained"
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        color: "#00A3FF",
-                                        backgroundColor: "white",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
                                         marginRight: "10px",
                                     }}
-                                    name={initialQuestions[stageNumber - 1]}
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
                                     onClick={() => {
                                         handleInitialQuestionsChangeYN("Yes");
                                         setStageNumber(stageNumber + 1);
                                     }}
                                 >
                                     Yes
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="contained"
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        backgroundColor: "white",
-                                        color: "#00A3FF",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
+                                        marginRight: "10px",
                                     }}
-                                    name={initialQuestions[stageNumber - 1]}
+                                    name={
+                                        Object.keys(initialQuestions)[
+                                            stageNumber - 1
+                                        ]
+                                    }
                                     onClick={() => {
                                         handleInitialQuestionsChangeYN("No");
                                         setStageNumber(stageNumber + 1);
                                     }}
                                 >
                                     No
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -782,14 +750,14 @@ function App() {
                                 flexDirection: "row",
                             }}
                         >
-                            <p
-                                style={{ cursor: "pointer", fontSize: "20px" }}
+                            <Button
+                                variant="text"
                                 onClick={() => {
                                     setStageNumber(stageNumber - 1);
                                 }}
                             >
                                 &lt; Previous
-                            </p>
+                            </Button>
                             <img
                                 style={{ width: "40px" }}
                                 src="./Logo.svg"
@@ -805,8 +773,16 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <p>{initialQuestions[stageNumber - 1]}</p>
-                            <p style={{ fontSize: "12px", fontWeight: "100" }}>
+                            <p>
+                                {Object.keys(initialQuestions)[stageNumber - 1]}
+                            </p>
+                            <p
+                                style={{
+                                    fontSize: "12px",
+                                    fontWeight: "300",
+                                    width: "70%",
+                                }}
+                            >
                                 *Disclaimer* After answering this question, you
                                 will begin a 5 minute verbal conversation with
                                 Ava. This will save you the wait at the doctor’s
@@ -823,31 +799,27 @@ function App() {
                                 flexDirection: "column",
                             }}
                         >
-                            <input
-                                style={{
-                                    borderColor: "#00A3FF",
-                                    borderRadius: "30px",
-                                    textAlign: "center",
-                                    color: "#00A3FF",
-                                    marginBottom: "10px",
-                                    width: "30em",
-                                    height: "1.5em",
-                                }}
-                                type="text"
-                                placeholder="e.g. I have a really bad sore throat"
-                                name={initialQuestions[stageNumber - 1]}
+                            <TextField
+                                style={{ marginBottom: "10px", width: "40%" }}
+                                id="outlined-basic"
+                                label="Visit Reason"
+                                variant="outlined"
+                                name={
+                                    Object.keys(initialQuestions)[
+                                        stageNumber - 1
+                                    ]
+                                }
                                 onChange={handleInitialQuestionsChange}
                             />
-                            <button
-                                style={{
-                                    border: "none",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                }}
-                                onClick={startConversation}
-                            >
-                                Start Conversation &gt;
-                            </button>
+                            {!loading && (
+                                <Button
+                                    variant="text"
+                                    onClick={startConversation}
+                                >
+                                    Start Conversation &gt;
+                                </Button>
+                            )}
+                            {loading && <CircularProgress />}
                         </div>
                     </div>
                 ))
@@ -868,7 +840,6 @@ function App() {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 flexDirection: "column",
-                                color: "white",
                             }}
                         >
                             <div
@@ -899,7 +870,13 @@ function App() {
                                 Ava
                             </div>
                         </div>
-                        <div className="chat-history">
+                        <div
+                            className="chat-history"
+                            style={{
+                                border: "1px solid #1976D2",
+                                borderRadius: "20px 0px 0px 20px",
+                            }}
+                        >
                             {chatHistory.map((msg, index) => (
                                 <div
                                     style={{
@@ -927,15 +904,9 @@ function App() {
                                     alignItems: "center",
                                 }}
                             >
-                                <input
+                                <TextField
                                     style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        color: "#00A3FF",
-                                        marginBottom: "10px",
                                         width: "30em",
-                                        height: "1.5em",
                                         marginRight: "10px",
                                     }}
                                     type="text"
@@ -950,22 +921,15 @@ function App() {
                                     }}
                                     placeholder="Type your message..."
                                 />
-                                <button
-                                    style={{
-                                        borderColor: "#00A3FF",
-                                        borderRadius: "30px",
-                                        textAlign: "center",
-                                        backgroundColor: "white",
-                                        color: "#00A3FF",
-                                        marginBottom: "10px",
-                                        width: "6em",
-                                        height: "1.5em",
-                                        cursor: "pointer",
-                                    }}
-                                    onClick={sendMessage}
-                                >
-                                    Send
-                                </button>
+                                {!loading && (
+                                    <Button
+                                        variant="contained"
+                                        onClick={sendMessage}
+                                    >
+                                        Send
+                                    </Button>
+                                )}
+                                {loading && <CircularProgress />}
                             </div>
                         )}
                         {isConversationFinished && (
@@ -975,12 +939,19 @@ function App() {
                                     height: "20%",
                                     justifyContent: "center",
                                     alignItems: "center",
+                                    flexDirection: "column",
                                 }}
                             >
-                                <h2>Conversation Finished</h2>
-                                <button onClick={fetchReport}>
-                                    Get Report
-                                </button>
+                                <h2>Conversation Finished!</h2>
+                                {!loading && (
+                                    <Button
+                                        variant="contained"
+                                        onClick={fetchReport}
+                                    >
+                                        Get Report
+                                    </Button>
+                                )}
+                                {loading && <CircularProgress />}
                             </div>
                         )}
                     </div>
