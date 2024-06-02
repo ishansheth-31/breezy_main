@@ -76,6 +76,7 @@ function App() {
             setUserMessage("");
             if (response.data.finished) {
                 setIsConversationFinished(true);
+                fetchReport();
             }
             setLoading(false);
         } catch (error) {
@@ -943,15 +944,6 @@ function App() {
                                 }}
                             >
                                 <h2>Conversation Finished!</h2>
-                                {!loading && (
-                                    <Button
-                                        variant="contained"
-                                        onClick={fetchReport}
-                                    >
-                                        Get Report
-                                    </Button>
-                                )}
-                                {loading && <CircularProgress />}
                             </div>
                         )}
                     </div>
