@@ -6,13 +6,13 @@ def main():
     
     # Prompt user for initial questions and gather answers
     initial_questions_dict = {
-        "What is your name?": input("What is your name? "),
+        "What is your first and last name?": input("What is your first and last name? "),
         "What is your approximate height?": input("What is your approximate height? "),
         "What is your approximate weight?": input("What is your approximate weight? "),
         "Are you currently taking any medications?": input("Are you currently taking any medications? "),
         "Have you had any recent surgeries?": input("Have you had any recent surgeries? "),
         "Do you have any known drug allergies?": input("Do you have any known drug allergies? "),
-        "Finally, what are you in for today?": input("Finally, what are you in for today? ")
+        "Finally, could you tell me what your going into the office for?": input("Finally, could you tell me what your going into the office for? ")
     }
 
     last_initial_answer = bot.handle_initial_questions(initial_questions_dict)
