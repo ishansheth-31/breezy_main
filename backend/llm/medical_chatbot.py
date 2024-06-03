@@ -34,7 +34,7 @@ class MedicalChatbot:
 
     def handle_initial_questions(self, initial_questions_dict):
         self.initial_questions_dict = initial_questions_dict
-        last_answer = initial_questions_dict.get("Finally, could you tell me what your going into the office for?", "")
+        last_answer = initial_questions_dict.get("Finally, what are you in for today?", "")
 
         try:
             patient_data = {
@@ -43,7 +43,7 @@ class MedicalChatbot:
                 "medications": self.initial_questions_dict.get("Are you currently taking any medications?", ""),
                 "recent_surgeries": self.initial_questions_dict.get("Have you had any recent surgeries?", ""),
                 "drug_allergies": self.initial_questions_dict.get("Do you have any known drug allergies?", ""),
-                "visit_reason": self.initial_questions_dict.get("Finally, could you tell me what your going into the office for?", ""),
+                "visit_reason": self.initial_questions_dict.get("Finally, what are you in for today?", ""),
             }
             patients_collection.update_one(
                 {"_id": ObjectId(self.patient_id)},
