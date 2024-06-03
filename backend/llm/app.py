@@ -1,3 +1,4 @@
+from bson import ObjectId
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from medical_chatbot import MedicalChatbot
@@ -34,6 +35,10 @@ def report():
     if chatbot.finished:
         report_content = chatbot.create_report().choices[0].message.content
         report_data = chatbot.extract_and_save_report(report_content)
+
+        if isinstance(report_data, dict):
+            report_data['_id'] = str(report_data.get('_id'))
+
         return jsonify(report_data)
     else:
         return jsonify({"error": "Chat not finished"}), 400

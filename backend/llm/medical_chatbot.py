@@ -11,7 +11,6 @@ from bson import ObjectId
 facility_id = '66561810cf408ac02573b706'
 new_patient_id = '665623dd0cc7f4b6b3919022'
 
-# Initialize OpenAI and MongoDB clients
 api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
 

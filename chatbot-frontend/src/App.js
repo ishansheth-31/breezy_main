@@ -13,7 +13,7 @@ function App() {
         "Are you currently taking any medications?": "",
         "Have you had any recent surgeries?": "",
         "Do you have any known drug allergies?": "",
-        "Finally, could you tell me what your going into the office for?": "",
+        "Finally, what are you in for today?": "",
     });
     const [chatHistory, setChatHistory] = useState([]);
     const [userMessage, setUserMessage] = useState("");
