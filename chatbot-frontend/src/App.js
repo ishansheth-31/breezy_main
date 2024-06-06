@@ -4,6 +4,8 @@ import "./App.css";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
+import StopIcon from "@mui/icons-material/Stop";
 
 function App() {
     const [initialQuestions, setInitialQuestions] = useState({
@@ -17,11 +19,12 @@ function App() {
     });
     const [chatHistory, setChatHistory] = useState([]);
     const [userMessage, setUserMessage] = useState("");
-    const [isConversationStarted, setIsConversationStarted] = useState(false);
+    const [isConversationStarted, setIsConversationStarted] = useState(true);
     const [isConversationFinished, setIsConversationFinished] = useState(false);
     const [stageNumber, setStageNumber] = useState(0);
     const [height, setHeight] = useState("4'0\"");
     const [loading, setLoading] = useState(false);
+    const [recording, setRecording] = useState(false);
 
     const handleInitialQuestionsChange = (e) => {
         setInitialQuestions({
@@ -97,10 +100,20 @@ function App() {
         }
     };
 
+    const handleRecording = async () => {
+        if (!recording) {
+            //code
+        } else {
+            //code
+            sendMessage();
+        }
+        setRecording(!recording);
+    };
+
     return (
         <div
             style={{
-                display: "flex",
+                display: !isConversationStarted ? "flex" : "block",
                 width: "100vw",
                 height: "100vh",
                 textAlign: "center",
@@ -923,12 +936,31 @@ function App() {
                                     placeholder="Type your message..."
                                 />
                                 {!loading && (
-                                    <Button
-                                        variant="contained"
-                                        onClick={sendMessage}
-                                    >
-                                        Send
-                                    </Button>
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            onClick={sendMessage}
+                                        >
+                                            Send
+                                        </Button>
+                                        <div style={{ marginLeft: "10px" }}>
+                                            {!recording ? (
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={handleRecording}
+                                                >
+                                                    <KeyboardVoiceIcon />
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={handleRecording}
+                                                >
+                                                    <StopIcon />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                                 {loading && <CircularProgress />}
                             </div>
