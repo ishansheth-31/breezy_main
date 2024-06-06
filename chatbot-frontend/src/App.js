@@ -19,7 +19,7 @@ function App() {
     });
     const [chatHistory, setChatHistory] = useState([]);
     const [userMessage, setUserMessage] = useState("");
-    const [isConversationStarted, setIsConversationStarted] = useState(true);
+    const [isConversationStarted, setIsConversationStarted] = useState(false);
     const [isConversationFinished, setIsConversationFinished] = useState(false);
     const [stageNumber, setStageNumber] = useState(0);
     const [height, setHeight] = useState("4'0\"");
