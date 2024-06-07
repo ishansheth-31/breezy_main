@@ -4,7 +4,6 @@ def main():
     print("Hello, I'm your virtual nurse assistant. Let's start with some basic questions.")
     bot = MedicalChatbot()
     
-    # Prompt user for initial questions and gather answers
     initial_questions_dict = {
         "What is your first and last name?": input("What is your first and last name? "),
         "What is your approximate height?": input("What is your approximate height? "),

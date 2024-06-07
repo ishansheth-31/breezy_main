@@ -1,22 +1,27 @@
 from openai import OpenAI
 from pymongo import MongoClient
-import os
 import re
 import logging
 import assemblyai as aai
 from prompts import MAIN_PROMPT, DOCUMENTATION_PROMPT
 from utils import parse_report_sections
 from bson import ObjectId
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 facility_id = '66561810cf408ac02573b706'
-new_patient_id = '665623dd0cc7f4b6b3919022'
+new_patient_id = '666266f3b69fae1a8aabf383'
 
 api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
 
-aai.settings.api_key = "f47fc69f44914e5d973f9d2f719ba271"
+aai_api_key = os.getenv('AAI_KEY')
+aai.settings.api_key = aai_api_key
 
-mongoClient = MongoClient('mongodb+srv://ishansheth31:Kevi5han1234@breezytest1.saw2kxe.mongodb.net/')
+mongo_key = os.getenv('MONGO_KEY')
+mongoClient = MongoClient(mongo_key)
 db = mongoClient["BreezyPatient"]
 patients_collection = db["patient"]
 conversations_collection = db["conversation"]
