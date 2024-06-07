@@ -31,8 +31,6 @@ reports_collection = db["report"]
 
 transcript_queue = Queue()
 
-aai.settings.api_key = "f47fc69f44914e5d973f9d2f719ba271"
-
 message_prompt = MAIN_PROMPT
 
 class MedicalChatbot:
