@@ -14,7 +14,7 @@ load_dotenv()
 facility_id = '66561810cf408ac02573b706'
 new_patient_id = '666266f3b69fae1a8aabf383'
 
-api_key = os.getenv('OPENAI_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY_2')
 client = OpenAI(api_key=api_key)
 
 aai_api_key = os.getenv('AAI_KEY')
