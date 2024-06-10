@@ -104,6 +104,7 @@ def terminate_session():
             response = chatbot.generate_response(transcript_result)
             speak(response)
             chatbot.should_stop(response)
+            data['terminate_session'] = False 
             return jsonify({"response": response, "finished": chatbot.finished}), 200
         else:
             return jsonify({'error': 'Invalid request'}), 400
