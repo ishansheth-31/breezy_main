@@ -5,8 +5,12 @@ import os
 import re
 import logging
 import requests
+from dotenv import load_dotenv
 
-mongoClient = MongoClient('mongodb+srv://ishansheth31:Kevi5han1234@breezytest1.saw2kxe.mongodb.net/')
+load_dotenv()
+
+mongo_key = os.getenv('MONGO_KEY')
+mongoClient = MongoClient(mongo_key)
 db = mongoClient["BreezyPatient"]
 facilities_collection = db["facilities"]
 

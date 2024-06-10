@@ -1,11 +1,17 @@
 from twilio.rest import Client
 from pymongo import MongoClient
 from bson import ObjectId
+from dotenv import load_dotenv
+import os
 
 facility_id = '665103d70423a23be7bd49f4'
 patient_id = '6654f5b67b54fa78e33c3af6'
 
-mongoClient = MongoClient('mongodb+srv://ishansheth31:Kevi5han1234@breezytest1.saw2kxe.mongodb.net/')
+
+load_dotenv()
+
+mongo_key = os.getenv('MONGO_KEY')
+mongoClient = MongoClient(mongo_key)
 db = mongoClient["BreezyPatient"]
 patients_collection = db["patient"]
 facilities_collection = db["facilities"]

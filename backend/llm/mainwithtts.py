@@ -8,6 +8,8 @@ from utils import parse_report_sections
 from bson import ObjectId
 import os
 from dotenv import load_dotenv
+from queue import Queue
+import pyttsx3
 
 load_dotenv()
 
@@ -26,6 +28,10 @@ db = mongoClient["BreezyPatient"]
 patients_collection = db["patient"]
 conversations_collection = db["conversation"]
 reports_collection = db["report"]
+
+transcript_queue = Queue()
+
+message_prompt = MAIN_PROMPT
 
 class MedicalChatbot:
 
@@ -158,3 +164,72 @@ class MedicalChatbot:
         except Exception as e:
             logging.error(f"Error extracting and saving report: {e}")
             return f"An error occurred: {str(e)}"
+
+def on_data(transcript: aai.RealtimeTranscript):
+    if not transcript.text:
+        return
+    if isinstance(transcript, aai.RealtimeFinalTranscript):
+        transcript_queue.put(transcript.text + '')
+        print("User:", transcript.text, end="\r\n")
+    else:
+        print(transcript.text, end="\r")
+
+def on_error(error: aai.RealtimeError):
+    print("An error occured:", error)
+
+def speak(text):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+
+def handle_conversation():
+    print("Hello, I'm your virtual nurse assistant. Let's start with some basic questions.")
+    bot = MedicalChatbot()
+
+    initial_questions_dict = {
+        "What is your name?": input("What is your name? "),
+        "What is your approximate height?": input("What is your approximate height? "),
+        "What is your approximate weight?": input("What is your approximate weight? "),
+        "Are you currently taking any medications?": input("Are you currently taking any medications? "),
+        "Have you had any recent surgeries?": input("Have you had any recent surgeries? "),
+        "Do you have any known drug allergies?": input("Do you have any known drug allergies? "),
+        "Finally, what are you in for today?": input("Finally, what are you in for today? ")
+    }
+
+    last_initial_answer = bot.handle_initial_questions(initial_questions_dict)
+
+    if last_initial_answer:
+        response = bot.generate_response(last_initial_answer)
+        print("Virtual Nurse:", response)
+        speak(response)
+
+    while not bot.finished:
+        transcriber = aai.RealtimeTranscriber(
+            on_data=on_data,
+            on_error=on_error,
+            sample_rate=44_100,
+            end_utterance_silence_threshold=20000,
+            disable_partial_transcripts=True
+        )
+        transcriber.connect()
+        microphone_stream = aai.extras.MicrophoneStream()
+        transcriber.stream(microphone_stream)
+        transcriber.close()
+
+        transcript_result = transcript_queue.get()
+        response = bot.generate_response(transcript_result)
+
+        print("Virtual Nurse:", response)
+        speak(response)
+
+        bot.should_stop(response)
+
+    if bot.finished:
+        report_content = bot.create_report().choices[0].message.content
+        print(report_content)
+        file_path = bot.extract_and_save_report(report_content)
+        print(f"Report saved to: {file_path}")
+
+
+if __name__ == "__main__":
+    handle_conversation()
