@@ -74,7 +74,11 @@ def start_conversation():
 def chat():
     try:
         handler.start_transcription()
-        return jsonify({"message": "Conversation started"})
+        transcript_result = transcript_queue.get()
+        response = chatbot.generate_response(transcript_result)
+        speak(response)
+        chatbot.should_stop(response)
+        return jsonify({"response": response, "finished": chatbot.finished}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -89,17 +93,22 @@ def report():
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"error": "Chat not finished"}), 400
-
-@app.route('/stop', methods=['POST'])
-def stop_conversation():
+    
+@app.route('/terminate', methods=['POST'])
+def terminate_session():
     try:
-        transcript_result = transcript_queue.get()
-        response = chatbot.generate_response(transcript_result)
-        speak(response)
-        chatbot.should_stop(response)
-        return jsonify({"response": response, "finished": chatbot.finished}), 200
+        data = request.get_json()
+        if data and data.get('terminate_session', False):
+            data['terminate_session'] = True 
+            transcript_result = transcript_queue.get()
+            response = chatbot.generate_response(transcript_result)
+            speak(response)
+            chatbot.should_stop(response)
+            return jsonify({"response": response, "finished": chatbot.finished}), 200
+        else:
+            return jsonify({'error': 'Invalid request'}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
