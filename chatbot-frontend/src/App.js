@@ -918,7 +918,7 @@ function App() {
                                     alignItems: "center",
                                 }}
                             >
-                                <TextField
+                                {/* <TextField
                                     style={{
                                         width: "30em",
                                         marginRight: "10px",
@@ -934,15 +934,15 @@ function App() {
                                         }
                                     }}
                                     placeholder="Type your message..."
-                                />
+                                /> */}
                                 {!loading && (
                                     <>
-                                        <Button
+                                        {/* <Button
                                             variant="contained"
                                             onClick={sendMessage}
                                         >
                                             Send
-                                        </Button>
+                                        </Button> */}
                                         <div style={{ marginLeft: "10px" }}>
                                             {!recording ? (
                                                 <Button
