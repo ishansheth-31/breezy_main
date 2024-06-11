@@ -11,9 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-facility_id = '66561810cf408ac02573b706'
-new_patient_id = '666266f3b69fae1a8aabf383'
-
 api_key = os.getenv('OPENAI_API_KEY_2')
 client = OpenAI(api_key=api_key)
 
@@ -22,10 +19,10 @@ aai.settings.api_key = aai_api_key
 
 mongo_key = os.getenv('MONGO_KEY')
 mongoClient = MongoClient(mongo_key)
-db = mongoClient["BreezyPatient"]
+db = mongoClient["southernurogyno"]
 patients_collection = db["patient"]
 conversations_collection = db["conversation"]
-reports_collection = db["report"]
+reports_collection = db["reports"]
 
 class MedicalChatbot:
 
@@ -33,10 +30,9 @@ class MedicalChatbot:
         self.context = [{"role": "system", "content": MAIN_PROMPT}]
         self.finished = False
         self.initial_questions_answers = ""
-        self.patient_id = new_patient_id
         self.conversation_json = []
 
-    def handle_initial_questions(self, initial_questions_dict):
+    def handle_initial_questions(self, initial_questions_dict, patient_id):
         self.initial_questions_dict = initial_questions_dict
         last_answer = initial_questions_dict.get("Finally, what are you in for today?", "")
 
@@ -50,12 +46,12 @@ class MedicalChatbot:
                 "visit_reason": self.initial_questions_dict.get("Finally, what are you in for today?", ""),
             }
             patients_collection.update_one(
-                {"_id": ObjectId(self.patient_id)},
+                {"_id": ObjectId(patient_id)},
                 {"$set": patient_data},
             )
 
             patients_collection.update_one(
-                {"_id": ObjectId(self.patient_id)},
+                {"_id": ObjectId(patient_id)},
                 {"$set": {"status": "complete"}},
             )
 
@@ -116,7 +112,7 @@ class MedicalChatbot:
         """
         return self.context
 
-    def extract_and_save_report(self, report_content):
+    def extract_and_save_report(self, report_content, patient_id):
         """
         Extract the report content from the response and save it as a JSON document,
         including initial questions and answers at the top.
@@ -127,7 +123,7 @@ class MedicalChatbot:
 
             # Save report to MongoDB
             report_data = {
-                "patient_id": self.patient_id,
+                "patient_id": patient_id,
                 "Chief Complaint (CC)": report_sections.get('Chief Complaint (CC)', ''),
                 "History of Present Illness (HPI)": report_sections.get('History of Present Illness (HPI)', ''),
                 "Medical history": report_sections.get('Medical history', ''),
@@ -143,15 +139,15 @@ class MedicalChatbot:
                 "Evaluation": report_sections.get('Evaluation', ''),
             }
             reports_collection.insert_one(report_data)
-            logging.info(f"Report data inserted for patient ID: {self.patient_id}")
+            logging.info(f"Report data inserted for patient ID: {patient_id}")
 
             # Save conversation to MongoDB
             conversation_data = {
-                "patient_id": self.patient_id,
+                "patient_id": patient_id,
                 "conversation_json": self.conversation_json
             }
             conversations_collection.insert_one(conversation_data)
-            logging.info(f"Conversation data inserted for patient ID: {self.patient_id}")
+            logging.info(f"Conversation data inserted for patient ID: {patient_id}")
 
             # Return the JSON report data
             return report_data
