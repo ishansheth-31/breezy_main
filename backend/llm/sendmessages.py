@@ -62,7 +62,7 @@ def add_patients_and_send_messages(csv_path):
 
         result = patients_collection.insert_one(patient_data)
         patient_id = result.inserted_id
-        link = f'http://localhost:3000/{patient_id}'  # Append the token to the link
+        link = f'https://breezy-main-1bre.vercel.app/{patient_id}'  # Append the token to the link
         send_message(row['Phone'], row['fName'], row['Appt_Date'], row['Appt_Time'], link)
 
 def main():
