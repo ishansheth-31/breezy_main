@@ -8,6 +8,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 function App() {
     const pathParts = window.location.href.split('/');
     const patient_id = pathParts[pathParts.length - 1];
+    console.log("URL:", window.location.href);
+    console.log("Extracted patient ID:", patient_id);
+
 
     const [initialQuestions, setInitialQuestions] = useState({
         "What is your first and last name?": "",
@@ -34,7 +37,7 @@ function App() {
         });
     };
 
-    
+
     const handleInitialQuestionsChangeYN = (answer) => {
         setInitialQuestions({
             ...initialQuestions,
