@@ -5,7 +5,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 
-
 function App() {
     const pathParts = window.location.href.split('/');
     const patient_id = pathParts[pathParts.length - 1];
@@ -35,6 +34,7 @@ function App() {
         });
     };
 
+    
     const handleInitialQuestionsChangeYN = (answer) => {
         setInitialQuestions({
             ...initialQuestions,
@@ -102,45 +102,10 @@ function App() {
         }
     };
 
-    const handleRecording = async () => {
-        if (!recording) {
-            await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
-                { action: "start" },
-                {
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-        } else {
-            // Stop recording code
-            const response = await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
-                { action: "stop" },
-                {
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-            // Assuming transcribedText is part of the response
-            const transcribedText = response.data.transcribedText;
-            setChatHistory([
-                ...chatHistory,
-                { role: "user", content: transcribedText },
-                { role: "assistant", content: response.data.response },
-            ]);
-            if (response.data.finished) {
-                setIsConversationFinished(true);
-                fetchReport();
-            }
-        }
-        setRecording(!recording);
-    };
-    
-    
-
     return (
         <div
             style={{
-                display: !isConversationStarted ? "flex" : "block",
+                display: "flex",
                 width: "100vw",
                 height: "100vh",
                 textAlign: "center",
@@ -945,7 +910,7 @@ function App() {
                                     alignItems: "center",
                                 }}
                             >
-                                {/* <TextField
+                                <TextField
                                     style={{
                                         width: "30em",
                                         marginRight: "10px",
@@ -961,33 +926,14 @@ function App() {
                                         }
                                     }}
                                     placeholder="Type your message..."
-                                /> */}
+                                />
                                 {!loading && (
-                                    <>
-                                        {/* <Button
-                                            variant="contained"
-                                            onClick={sendMessage}
-                                        >
-                                            Send
-                                        </Button> */}
-                                        <div style={{ marginLeft: "10px" }}>
-                                            {!recording ? (
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={handleRecording}
-                                                >
-                                                    Start  {/* This will display "Start" when not recording */}
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={handleRecording}
-                                                >
-                                                    Stop  {/* This will display "Stop" when recording is active */}
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </>
+                                    <Button
+                                        variant="contained"
+                                        onClick={sendMessage}
+                                    >
+                                        Send
+                                    </Button>
                                 )}
                                 {loading && <CircularProgress />}
                             </div>
