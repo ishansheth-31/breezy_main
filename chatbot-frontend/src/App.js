@@ -4,10 +4,10 @@ import "./App.css";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import io from "socket.io-client";
 
 function App() {
-    const pathParts = window.location.href.split('/');
+    const pathParts = window.location.href.split("/");
     const patient_id = pathParts[pathParts.length - 1];
 
     const [initialQuestions, setInitialQuestions] = useState({
@@ -93,7 +93,9 @@ function App() {
     const fetchReport = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://127.0.0.1:5000/report/${patient_id}`);
+            const response = await axios.get(
+                `http://127.0.0.1:5000/report/${patient_id}`
+            );
             console.log("Report:", response.data);
             setLoading(false);
         } catch (error) {
@@ -103,39 +105,64 @@ function App() {
     };
 
     const handleRecording = async () => {
-        if (!recording) {
-            await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
-                { action: "start" },
-                {
-                    headers: { "Content-Type": "application/json" },
+        try {
+            if (!recording) {
+                await axios.post(
+                    `http://127.0.0.1:5000/toggle_transcription`,
+                    { action: "start" },
+                    {
+                        headers: { "Content-Type": "application/json" },
+                    }
+                );
+            } else {
+                // Stop recording code
+                const response = await axios.post(
+                    `http://127.0.0.1:5000/toggle_transcription`,
+                    { action: "stop" },
+                    {
+                        headers: { "Content-Type": "application/json" },
+                    }
+                );
+
+                // Assuming transcribedText is part of the response
+                const transcribedText = response.data.transcribedText;
+                setChatHistory([
+                    ...chatHistory,
+                    { role: "user", content: transcribedText },
+                    { role: "assistant", content: response.data.response },
+                ]);
+
+                if (response.data.finished) {
+                    setIsConversationFinished(true);
+                    fetchReport();
                 }
+            }
+
+            setRecording(!recording);
+        } catch (error) {
+            console.error(
+                "Error occurred while toggling transcription:",
+                error
             );
-        } else {
-            // Stop recording code
-            const response = await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
-                { action: "stop" },
-                {
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-            // Assuming transcribedText is part of the response
-            const transcribedText = response.data.transcribedText;
-            setChatHistory([
-                ...chatHistory,
-                { role: "user", content: transcribedText },
-                { role: "assistant", content: response.data.response },
-            ]);
-            if (response.data.finished) {
-                setIsConversationFinished(true);
-                fetchReport();
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error(
+                    "Server responded with an error:",
+                    error.response.data
+                );
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error(
+                    "No response received from server:",
+                    error.request
+                );
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error("Error setting up the request:", error.message);
             }
         }
-        setRecording(!recording);
     };
-    
-    
 
     return (
         <div
@@ -976,14 +1003,16 @@ function App() {
                                                     variant="contained"
                                                     onClick={handleRecording}
                                                 >
-                                                    Start  {/* This will display "Start" when not recording */}
+                                                    Start{" "}
+                                                    {/* This will display "Start" when not recording */}
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     variant="contained"
                                                     onClick={handleRecording}
                                                 >
-                                                    Stop  {/* This will display "Stop" when recording is active */}
+                                                    Stop{" "}
+                                                    {/* This will display "Stop" when recording is active */}
                                                 </Button>
                                             )}
                                         </div>

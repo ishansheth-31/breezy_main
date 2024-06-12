@@ -16,53 +16,46 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins='*')
+socketio = SocketIO(app, cors_allowed_origins=['http://127.0.0.1:5000'])
 
 chatbot = MedicalChatbot()
 
 API_KEY = os.getenv("DEEPGRAM_TOKEN")
+
 config = DeepgramClientOptions(verbose=logging.WARN, options={"keepalive": "true"})
 deepgram = DeepgramClient(API_KEY, config)
+
 dg_connection = None
 transcription_active = False
 
 def initialize_deepgram_connection():
-    print('testing1')
     global dg_connection
-    # Initialize Deepgram client and connection
     dg_connection = deepgram.listen.live.v("1")
 
     def on_open(self, open, **kwargs):
         print(f"\n\n{open}\n\n")
-    print('testing2')
 
     def on_message(self, result, **kwargs):
         transcript = result.channel.alternatives[0].transcript
         if len(transcript) > 0:
             print(result.channel.alternatives[0].transcript)
             socketio.emit('transcription_update', {'transcription': transcript})
-    print('testing3')
 
     def on_close(self, close, **kwargs):
         print(f"\n\n{close}\n\n")
 
     def on_error(self, error, **kwargs):
         print(f"\n\n{error}\n\n")
-    print('testing4')
 
     dg_connection.on(LiveTranscriptionEvents.Open, on_open)
     dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
     dg_connection.on(LiveTranscriptionEvents.Close, on_close)
     dg_connection.on(LiveTranscriptionEvents.Error, on_error)
-    print('testing5')
 
-    # Define the options for the live transcription
     options = LiveOptions(model="nova-2", language="en-US")
 
-    if dg_connection.start(options) is False: # THIS CAUSES ERROR
+    if dg_connection.start(options) is False:
         print("Failed to start connection")
-    else:
-        print("Deepgram connection established.")
         exit()
 
 def stop_transcription():
@@ -77,11 +70,8 @@ def stop_transcription():
 
 @app.route('/toggle_transcription', methods=['POST'])
 def toggle_transcription():
-    print("Received toggle request")
     data = request.get_json()
-    print(f"Data received: {data}")
     if data and data.get("action") == "start":
-        print("Starting transcription")
         initialize_deepgram_connection()
         print("transcription over")
         return jsonify({"status": "transcription started"}), 200
@@ -89,20 +79,35 @@ def toggle_transcription():
         print("Stopping transcription")
         stop_transcription()
         transcribed_text = data.get("transcription", "")
+        print(transcribed_text)
         response = chatbot.generate_response(transcribed_text)
         chatbot.should_stop(response)
         return jsonify({"response": response, "finished": chatbot.finished}), 200
     else:
         print("Invalid action received")
         return jsonify({"error": "Invalid action"}), 400
-
+    
 @socketio.on('audio_stream')
 def handle_audio_stream(data):
     if dg_connection:
         dg_connection.send(data)
 
-if __name__ == '__main__':
-    socketio.run(app, debug=True)
+@socketio.on('toggle_transcription')
+def handle_toggle_transcription(data):
+    print("toggle_transcription", data)
+    action = data.get("action")
+    if action == "start":
+        print("Starting Deepgram connection")
+        initialize_deepgram_connection()
+
+@socketio.on('connect')
+def server_connect():
+    print('Client connected')
+
+@socketio.on('restart_deepgram')
+def restart_deepgram():
+    print('Restarting Deepgram connection')
+    initialize_deepgram_connection()
 
 @app.route('/start/<patient_id>', methods=['POST'])
 def start_conversation(patient_id):    
@@ -133,3 +138,4 @@ def report(patient_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+    socketio.run(app, debug=True)
