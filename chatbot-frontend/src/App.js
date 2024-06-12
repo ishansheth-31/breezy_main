@@ -6,6 +6,9 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 
 function App() {
+    const pathParts = window.location.href.split("/");
+    const patient_id = pathParts[pathParts.length - 1];
+
     const [initialQuestions, setInitialQuestions] = useState({
         "What is your first and last name?": "",
         "What is your approximate height?": "4'0\"",
@@ -13,7 +16,7 @@ function App() {
         "Are you currently taking any medications?": "",
         "Have you had any recent surgeries?": "",
         "Do you have any known drug allergies?": "",
-        "Finally, could you tell me what your going into the office for?": "",
+        "Finally, what are you in for today?": "",
     });
     const [chatHistory, setChatHistory] = useState([]);
     const [userMessage, setUserMessage] = useState("");
@@ -41,7 +44,7 @@ function App() {
         try {
             setLoading(true);
             const response = await axios.post(
-                "http://127.0.0.1:5000/start",
+                `http://127.0.0.1:5000/start/${patient_id}`,
                 initialQuestions,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -88,7 +91,9 @@ function App() {
     const fetchReport = async () => {
         try {
             setLoading(true);
-            const response = await axios.get("http://127.0.0.1:5000/report");
+            const response = await axios.get(
+                `http://127.0.0.1:5000/report/${patient_id}`
+            );
             console.log("Report:", response.data);
             setLoading(false);
         } catch (error) {
