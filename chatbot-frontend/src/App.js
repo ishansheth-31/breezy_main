@@ -46,7 +46,7 @@ function App() {
         try {
             setLoading(true);
             const response = await axios.post(
-                `http://127.0.0.1:5000/start/${patient_id}`,
+                `https://breezy-main-1bre.vercel.app/${patient_id}`,
                 initialQuestions,
                 {
                     headers: { "Content-Type": "application/json" },
