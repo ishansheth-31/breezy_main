@@ -46,7 +46,7 @@ function App() {
         try {
             setLoading(true);
             const response = await axios.post(
-                `https://breezy-main-1bre.vercel.app/${patient_id}`,
+                `https://breezy-main-1bre.vercel.app/start/${patient_id}`,
                 initialQuestions,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -67,7 +67,7 @@ function App() {
         try {
             setLoading(true);
             const response = await axios.post(
-                `http://127.0.0.1:5000/chat/${patient_id}`,
+                `https://breezy-main-1bre.vercel.app/chat/${patient_id}`,
                 { message: userMessage },
                 {
                     headers: { "Content-Type": "application/json" },
@@ -93,7 +93,7 @@ function App() {
     const fetchReport = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://127.0.0.1:5000/report/${patient_id}`);
+            const response = await axios.get(`https://breezy-main-1bre.vercel.app/report/${patient_id}`);
             console.log("Report:", response.data);
             setLoading(false);
         } catch (error) {
@@ -105,7 +105,7 @@ function App() {
     const handleRecording = async () => {
         if (!recording) {
             await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
+                `https://breezy-main-1bre.vercel.app/toggle_transcription`,
                 { action: "start" },
                 {
                     headers: { "Content-Type": "application/json" },
@@ -114,7 +114,7 @@ function App() {
         } else {
             // Stop recording code
             const response = await axios.post(
-                `http://127.0.0.1:5000/toggle_transcription`,
+                `https://breezy-main-1bre.vercel.app/toggle_transcription`,
                 { action: "stop" },
                 {
                     headers: { "Content-Type": "application/json" },
