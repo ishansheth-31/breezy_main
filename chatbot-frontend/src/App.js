@@ -554,7 +554,7 @@ function App() {
                                     onChange={handleInitialQuestionsChange}
                                 />
                                 <Button
-                                    variant="contained"
+                                    variant="text"
                                     name={
                                         Object.keys(initialQuestions)[
                                             stageNumber - 1
@@ -569,7 +569,7 @@ function App() {
                                 </Button>
                             </div>
                             <Button
-                                variant="text"
+                                variant="contained"
                                 onClick={() => {
                                     setStageNumber(stageNumber + 1);
                                 }}

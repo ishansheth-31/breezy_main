@@ -66,7 +66,7 @@ def add_patients_and_send_messages(csv_path):
         send_message(row['Phone'], row['fName'], row['Appt_Date'], row['Appt_Time'], link)
 
 def main():
-    csv_path = '/Users/ishansheth/Documents/GitHub/breezy_main/backend/llm/patients.csv'  # Updated path to the CSV file
+    csv_path = 'backend\llm\patients.csv'  # Updated path to the CSV file
     add_patients_and_send_messages(csv_path)
 
 if __name__ == "__main__":
